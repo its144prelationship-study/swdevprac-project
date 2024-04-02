@@ -9,9 +9,9 @@ connectDB();
 
 const app = express();
 const auth = require('./routes/auth');
-const companies = require('./routes/companies.route');
-const bookings = require('./routes/bookings.route');
-const favorites = require('./routes/favorites.route');
+const companies = require('./routes/companies.routes');
+const bookings = require('./routes/bookings.routes');
+const favorites = require('./routes/favorites.routes');
 
 app.use(express.json());
 app.use(cookieParser());
