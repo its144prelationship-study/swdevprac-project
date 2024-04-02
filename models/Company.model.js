@@ -1,8 +1,10 @@
 const mongoose = require("mongoose");
 
-const companySchema = new mongoose.Schema({
+const CompanySchema = new mongoose.Schema({
     company_name: {
         type: String,
+        unique: true,
+        trim: true,
         required: [true, "Company name is required"],
     },
     address: {
@@ -28,4 +30,4 @@ const companySchema = new mongoose.Schema({
     },
 });
 
-module.exports = mongoose.model("Companies", companySchema);
+module.exports = mongoose.model("Companies", CompanySchema);
