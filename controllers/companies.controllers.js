@@ -3,11 +3,46 @@ const Company = require("../models/Company.model");
 exports.getCompanies = async (req, res, next) => {
     try {
         let query;
-        query = Company.find();
-        const companies = await query;
 
+        const reqQuery = { ...req.query };
+        const removeFields = ["page", "limit"];
+        removeFields.forEach((param) => delete reqQuery[param]);
+        console.log(reqQuery);
+
+        let queryStr = JSON.stringify(reqQuery);
+        queryStr = queryStr.replace(/\b(gt|gte|lt|lte|in)\b/g, (match) => `$${match}`);
+        query = Company.find(JSON.parse(queryStr));
+        
+        // pagination
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const startIndex = (page - 1) * limit;
+        const endIndex = page * limit;
+        const total = await Company.countDocuments();
+        
+        query = query.skip(startIndex).limit(limit);
+
+        const pagination = {};
+        if (endIndex < total) {
+            pagination.next = {
+                page: page + 1,
+                limit
+            }
+        }
+
+        if (startIndex > 0) {
+            pagination.prev = {
+                page: page - 1,
+                limit
+            }
+        }
+        
+        const companies = await query;
+        
         res.status(200).json({
             success: true,
+            count: companies.length,
+            pagination,
             data: companies,
         });
     } catch (err) {
