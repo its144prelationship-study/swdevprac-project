@@ -41,6 +41,23 @@ exports.getCompanies = async (req, res, next) => {
             query = query.select(companyFields.join(" ")); // exclude __v
         }
 
+        // sort by fields
+        if (req.query.sort) {
+            const sortBy = req.query.sort.split(",");
+            let [isVerified, field] = verifyFields(sortBy);
+            
+            if (!isVerified) {
+                return res.status(400).json({
+                    success: false,
+                    message: `Field '${field}' is not a valid field`,
+                });
+            }
+
+            query = query.sort(sortBy.join(" "));
+        } else {
+            query = query.sort("company_name");
+        }
+
         // pagination
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
