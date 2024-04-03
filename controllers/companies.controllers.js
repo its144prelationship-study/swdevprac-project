@@ -1,18 +1,46 @@
 const Company = require("../models/Company.model");
 
+const companyFields = Object.keys(Company.schema.obj);
+companyFields.push("_id");
+
+function verifyFields(fields) {
+    for (let i = 0; i < fields.length; i++) {
+        if (!Object.keys(Company.schema.obj).includes(fields[i])) {
+            return [false, fields[i]];
+        }
+    }
+
+    return [true, ""];
+};
+
 exports.getCompanies = async (req, res, next) => {
     try {
         let query;
-
         const reqQuery = { ...req.query };
-        const removeFields = ["page", "limit"];
+        const removeFields = ["select", "sort", "page", "limit"];
         removeFields.forEach((param) => delete reqQuery[param]);
-        console.log(reqQuery);
 
         let queryStr = JSON.stringify(reqQuery);
         queryStr = queryStr.replace(/\b(gt|gte|lt|lte|in)\b/g, (match) => `$${match}`);
         query = Company.find(JSON.parse(queryStr));
-        
+
+        // select fields
+        if (req.query.select) {
+            const fields = req.query.select.split(",");
+            let [isVerified, field] = verifyFields(fields);
+            
+            if (!isVerified) {
+                return res.status(400).json({
+                    success: false,
+                    message: `Field '${field}' is not a valid field`,
+                });
+            }
+
+            query = query.select(fields.join(" "));
+        } else {
+            query = query.select(companyFields.join(" ")); // exclude __v
+        }
+
         // pagination
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
