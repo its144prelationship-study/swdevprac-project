@@ -21,6 +21,7 @@ const CompanySchema = new mongoose.Schema({
     },
     tel: {
         type: String,
+        unique: true,
         required: [true, "Telephone number is required"],
         maxlength: [10, "Telephone number must not exceed 10 digits"],
     },

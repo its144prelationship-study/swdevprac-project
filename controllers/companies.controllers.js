@@ -28,9 +28,25 @@ exports.getCompany = async (req, res, next) => {
                 message: `Company not found with id of ${req.params.companyId}`,
             });
         }
-        
+
         res.status(200).json({
             success: true,
+            data: company,
+        });
+    } catch (err) {
+        res.status(400).json({
+            success: false,
+            message: `Error: ${err.message}`,
+        });
+    }
+};
+
+exports.createCompany = async (req, res, next) => {
+    try {
+        const company = await Company.create(req.body);
+
+        res.status(201).json({
+            success: true, 
             data: company,
         });
     } catch (err) {
