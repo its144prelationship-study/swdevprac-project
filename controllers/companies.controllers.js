@@ -58,7 +58,7 @@ exports.getCompanies = async (req, res, next) => {
             query = query.sort("company_name");
         }
 
-        // search by company name and position
+        // search by company name and receiving positions
         var total;
         if (req.query.name) {
             if (req.query.position) {
@@ -75,6 +75,9 @@ exports.getCompanies = async (req, res, next) => {
                 query = query.find({ company_name: { $regex: req.query.name, $options: "i" } });
                 total = await Company.countDocuments({ company_name: { $regex: req.query.name, $options: "i" } });
             }
+        } else if (req.query.position) {
+            query = query.find({ receiving_pos: { $in: [req.query.position] } });
+            total = await Company.countDocuments({ receiving_pos: { $in: [req.query.position] } });
         } else {
             total = await Company.countDocuments();
         }
