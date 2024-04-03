@@ -17,14 +17,12 @@ exports.getCompanies = async (req, res, next) => {
     try {
         let query;
         const reqQuery = { ...req.query };
-        const removeFields = ["select", "sort", "name", "page", "limit"];
+        const removeFields = ["select", "sort", "name", "position", "page", "limit"];
         removeFields.forEach((param) => delete reqQuery[param]);
 
         let queryStr = JSON.stringify(reqQuery);
         queryStr = queryStr.replace(/\b(gt|gte|lt|lte|in)\b/g, (match) => `$${match}`);
         query = Company.find(JSON.parse(queryStr));
-
-        var total = await Company.countDocuments();
 
         // select fields
         if (req.query.select) {
@@ -60,10 +58,25 @@ exports.getCompanies = async (req, res, next) => {
             query = query.sort("company_name");
         }
 
-        // search by company name
+        // search by company name and position
+        var total;
         if (req.query.name) {
-            query = query.find({ company_name: { $regex: req.query.name, $options: "i" } });
-            total = await Company.countDocuments({ company_name: { $regex: req.query.name, $options: "i" } });
+            if (req.query.position) {
+                const position = new RegExp(req.query.position, "i");
+                query = query.find({
+                    company_name: { $regex: req.query.name, $options: "i" }, 
+                    receiving_pos: { $in: [position] }
+                });
+                total = await Company.countDocuments({ 
+                    company_name: { $regex: req.query.name, $options: "i" }, 
+                    receiving_pos: { $in: [position] }
+                });
+            } else {
+                query = query.find({ company_name: { $regex: req.query.name, $options: "i" } });
+                total = await Company.countDocuments({ company_name: { $regex: req.query.name, $options: "i" } });
+            }
+        } else {
+            total = await Company.countDocuments();
         }
 
         // pagination
