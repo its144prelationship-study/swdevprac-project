@@ -17,7 +17,7 @@ exports.getCompanies = async (req, res, next) => {
     try {
         let query;
         const reqQuery = { ...req.query };
-        const removeFields = ["select", "sort", "page", "limit"];
+        const removeFields = ["select", "sort", "name", "page", "limit"];
         removeFields.forEach((param) => delete reqQuery[param]);
 
         let queryStr = JSON.stringify(reqQuery);
@@ -58,6 +58,12 @@ exports.getCompanies = async (req, res, next) => {
             query = query.sort(sortBy.join(" "));
         } else {
             query = query.sort("company_name");
+        }
+
+        // search by company name
+        if (req.query.name) {
+            query = query.find({ company_name: { $regex: req.query.name, $options: "i" } });
+            total = await Company.countDocuments({ company_name: { $regex: req.query.name, $options: "i" } });
         }
 
         // pagination
