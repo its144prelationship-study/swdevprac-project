@@ -56,3 +56,29 @@ exports.createCompany = async (req, res, next) => {
         });
     }
 };
+
+exports.updateCompany = async (req, res, next) => {
+    try {
+        const company = await Company.findByIdAndUpdate(req.params.companyId, req.body, {
+            new: true,
+            runValidators: true,
+        });
+
+        if (!company) {
+            return res.status(400).json({
+                success: false,
+                message: `Company not found with id of ${req.params.companyId}`,
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            data: company,
+        });
+    } catch (err) {
+        res.status(400).json({
+            success: false,
+            message: `Error: ${err.message}`,
+        });
+    }
+};
