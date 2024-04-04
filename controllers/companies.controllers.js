@@ -15,14 +15,7 @@ function verifyFields(fields) {
 
 exports.getCompanies = async (req, res, next) => {
     try {
-        let query;
-        const reqQuery = { ...req.query };
-        const removeFields = ["select", "sort", "name", "position", "page", "limit"];
-        removeFields.forEach((param) => delete reqQuery[param]);
-
-        let queryStr = JSON.stringify(reqQuery);
-        queryStr = queryStr.replace(/\b(gt|gte|lt|lte|in)\b/g, (match) => `$${match}`);
-        query = Company.find(JSON.parse(queryStr));
+        let query = Company.find();
 
         // select fields
         if (req.query.select) {
@@ -97,7 +90,6 @@ exports.getCompanies = async (req, res, next) => {
                 limit
             }
         }
-
         if (startIndex > 0 && startIndex <= total) {
             pagination.prev = {
                 page: page - 1,
@@ -106,7 +98,6 @@ exports.getCompanies = async (req, res, next) => {
         }
         
         const companies = await query;
-        
         res.status(200).json({
             success: true,
             count: companies.length,
