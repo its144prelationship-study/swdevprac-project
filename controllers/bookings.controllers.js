@@ -22,10 +22,29 @@ exports.getBookings = async (req, res, next) => {
         "company_name tel receiving_pos"
       );
     }
-    const bookings = await query;
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 25;
+    const startIndex = (page - 1) * limit;
+    const endIndex = page * limit;
+    const total = await Booking.find(queryBody).countDocuments();
+    const bookings = await query.skip(startIndex).limit(limit);
+    const pagination = {};
+    if (endIndex < total) {
+      pagination.next = {
+        page: page + 1,
+        limit,
+      };
+    }
+    if (startIndex > 0 && bookings.length > 0) {
+      pagination.prev = {
+        page: page - 1,
+        limit,
+      };
+    }
     return res.status(200).json({
       success: true,
       count: bookings.length,
+      pagination,
       data: bookings,
     });
   } catch (error) {
