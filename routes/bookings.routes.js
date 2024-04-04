@@ -1,7 +1,6 @@
 const express = require("express");
 const {
   getBookings,
-  getCompanyBookings,
   getBooking,
   createBooking,
   updateBooking,
@@ -13,7 +12,6 @@ const router = express.Router({ mergeParams: true });
 router
   .route("/")
   .get(protect, getBookings)
-  .get(protect, getCompanyBookings)
   .post(protect, createBooking);
 router
   .route("/:bookingId")

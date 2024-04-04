@@ -4,7 +4,11 @@ const Company = require("../models/Company.model");
 exports.getBookings = async (req, res, next) => {
   try {
     if (req.user.role === "ADMIN") {
-      const bookings = await Booking.find()
+      let queryBody = {};
+      if (req.params.companyId) {
+        queryBody = { company_id: req.params.companyId };
+      }
+      const bookings = await Booking.find(queryBody)
         .populate("user_id", "name email tel")
         .populate("company_id", "company_name tel receiving_pos");
       return res.status(200).json({
@@ -12,38 +16,14 @@ exports.getBookings = async (req, res, next) => {
         data: bookings,
       });
     } else {
-      const bookings = await Booking.find({ user_id: req.user.id }).populate(
+      let queryBody = { user_id: req.user.id };
+      if (req.params.companyId) {
+        queryBody = { user_id: req.user.id, company_id: req.params.companyId };
+      }
+      const bookings = await Booking.find(queryBody).populate(
         "company_id",
         "company_name tel receiving_pos"
       );
-      return res.status(200).json({
-        success: true,
-        data: bookings,
-      });
-    }
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: "Server Error",
-    });
-  }
-};
-
-exports.getCompanyBookings = async (req, res, next) => {
-  try {
-    if (req.user.role === "ADMIN") {
-      const bookings = await Booking.find({ company_id: req.params.companyId })
-        .populate("user_id", "name email tel")
-        .populate("company_id", "company_name tel receiving_pos");
-      return res.status(200).json({
-        success: true,
-        data: bookings,
-      });
-    } else {
-      const bookings = await Booking.find({
-        user_id: req.user.id,
-        company_id: req.params.companyId,
-      }).populate("company_id", "company_name tel receiving_pos");
       return res.status(200).json({
         success: true,
         data: bookings,
