@@ -10,11 +10,15 @@ const {
 const { protect, authorize } = require("../middleware/auth.middleware");
 
 const router = express.Router({ mergeParams: true });
-router.route("/").get(getBookings).get(getCompanyBookings).post(createBooking);
+router
+  .route("/")
+  .get(protect, getBookings)
+  .get(protect, getCompanyBookings)
+  .post(protect, createBooking);
 router
   .route("/:bookingId")
-  .get(getBooking)
-  .put(updateBooking)
-  .delete(deleteBooking);
+  .get(protect, getBooking)
+  .put(protect, updateBooking)
+  .delete(protect, deleteBooking);
 
 module.exports = router;
