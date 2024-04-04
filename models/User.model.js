@@ -10,6 +10,7 @@ const UserSchema = new mongoose.Schema({
   tel: {
     type: String,
     maxlength: [10, "Please provide a valid phone number"],
+    minlength: [10, "Please provide a valid phone number"],
   },
   email: {
     type: String,
@@ -40,7 +41,7 @@ const UserSchema = new mongoose.Schema({
 });
 
 UserSchema.pre("save", async function (next) {
-  const salt = await bcrypt.getSalt(10);
+  const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
 });
 

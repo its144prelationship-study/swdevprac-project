@@ -1,4 +1,5 @@
 const User = require("../models/User.model");
+const bcrypt = require("bcryptjs");
 
 exports.register = async (req, res, next) => {
   try {
@@ -141,8 +142,10 @@ exports.editProfile = async (req, res, next) => {
         error: "Invalid password",
       });
     }
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(new_password, salt);
     const user_pass = await User.findByIdAndUpdate(req.user.id, {
-      password: new_password,
+      password: hashedPassword,
     });
     sendTokenResponse(user_pass, 200, res);
   } catch (error) {
