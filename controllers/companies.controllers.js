@@ -55,7 +55,7 @@ exports.getCompanies = async (req, res, next) => {
         var total;
         if (req.query.name) {
             if (req.query.position) {
-                const position = new RegExp(req.query.position, "i");
+                let position = new RegExp(req.query.position, "i");
                 query = query.find({
                     company_name: { $regex: req.query.name, $options: "i" }, 
                     receiving_pos: { $in: [position] }
@@ -69,8 +69,9 @@ exports.getCompanies = async (req, res, next) => {
                 total = await Company.countDocuments({ company_name: { $regex: req.query.name, $options: "i" } });
             }
         } else if (req.query.position) {
-            query = query.find({ receiving_pos: { $in: [req.query.position] } });
-            total = await Company.countDocuments({ receiving_pos: { $in: [req.query.position] } });
+            let position = new RegExp(req.query.position, "i");
+            query = query.find({ receiving_pos: { $in: [position] } });
+            total = await Company.countDocuments({ receiving_pos: { $in: [position] } });
         } else {
             total = await Company.countDocuments();
         }
