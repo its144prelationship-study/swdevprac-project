@@ -9,7 +9,7 @@ const { protect, authorize } = require("../middleware/auth.middleware");
 router.use("/:companyId/bookings", bookingRouter);
 router.use("/:companyId/favorites", favoriteRouter);
 
-router.route("/").get(getCompanies).post(createCompany);
-router.route("/:companyId").get(getCompany).put(updateCompany).delete(deleteCompany);
+router.route("/").get(getCompanies).post(protect, authorize("ADMIN"), createCompany);
+router.route("/:companyId").get(getCompany).put(protect, authorize("ADMIN"), updateCompany).delete(protect, authorize("ADMIN"), deleteCompany);
 
 module.exports = router;
