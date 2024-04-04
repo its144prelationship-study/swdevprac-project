@@ -15,7 +15,18 @@ function verifyFields(fields) {
 
 exports.getCompanies = async (req, res, next) => {
     try {
-        let query = Company.find();
+        let queryBody = {};
+        var query;
+
+        // search by company name and receiving positions
+        if (req.query.name) {
+            queryBody.company_name = { $regex: req.query.name, $options: "i" };
+        }
+        if (req.query.position) {
+            let position = new RegExp(req.query.position, "i");
+            queryBody.receiving_pos = { $in: [position] };
+        }
+        query = Company.find(queryBody);
 
         // select fields
         if (req.query.select) {
@@ -51,39 +62,15 @@ exports.getCompanies = async (req, res, next) => {
             query = query.sort("company_name");
         }
 
-        // search by company name and receiving positions
-        var total;
-        if (req.query.name) {
-            if (req.query.position) {
-                let position = new RegExp(req.query.position, "i");
-                query = query.find({
-                    company_name: { $regex: req.query.name, $options: "i" }, 
-                    receiving_pos: { $in: [position] }
-                });
-                total = await Company.countDocuments({ 
-                    company_name: { $regex: req.query.name, $options: "i" }, 
-                    receiving_pos: { $in: [position] }
-                });
-            } else {
-                query = query.find({ company_name: { $regex: req.query.name, $options: "i" } });
-                total = await Company.countDocuments({ company_name: { $regex: req.query.name, $options: "i" } });
-            }
-        } else if (req.query.position) {
-            let position = new RegExp(req.query.position, "i");
-            query = query.find({ receiving_pos: { $in: [position] } });
-            total = await Company.countDocuments({ receiving_pos: { $in: [position] } });
-        } else {
-            total = await Company.countDocuments();
-        }
-
         // pagination
-        const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 10;
+        const page = parseInt(req.query.page, 10) || 1;
+        const limit = parseInt(req.query.limit, 10) || 10;
         const startIndex = (page - 1) * limit;
         const endIndex = page * limit;
-        
-        query = query.skip(startIndex).limit(limit);
 
+        const companies = await query.skip(startIndex).limit(limit);
+
+        const total = await Company.countDocuments(queryBody);
         const pagination = {};
         if (endIndex < total) {
             pagination.next = {
@@ -97,8 +84,7 @@ exports.getCompanies = async (req, res, next) => {
                 limit
             }
         }
-        
-        const companies = await query;
+
         res.status(200).json({
             success: true,
             count: companies.length,
@@ -130,7 +116,7 @@ exports.getCompany = async (req, res, next) => {
             data: company,
         });
     } catch (err) {
-        console.log(err.message);
+
         res.status(500).json({
             success: false,
             error: "Internal Server Error",
@@ -155,7 +141,7 @@ exports.createCompany = async (req, res, next) => {
             data: company,
         });
     } catch (err) {
-        console.log(err.message);
+
         res.status(500).json({
             success: false,
             error: "Internal Server Error",
@@ -182,7 +168,7 @@ exports.updateCompany = async (req, res, next) => {
             data: company,
         });
     } catch (err) {
-        console.log(err.message);
+
         res.status(500).json({
             success: false,
             error: "Internal Server Error",
@@ -206,7 +192,7 @@ exports.deleteCompany = async (req, res, next) => {
             data: {},
         });
     } catch (err) {
-        console.log(err.message);
+
         res.status(500).json({
             success: false,
             error: "Internal Server Error",
