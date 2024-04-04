@@ -1,4 +1,5 @@
 const Favorite = require("../models/Favorite.model");
+const Company = require("../models/Company.model");
 
 exports.getFavorites = async (req, res, next) => {
     try {
@@ -9,15 +10,24 @@ exports.getFavorites = async (req, res, next) => {
             data: favorites,
         });
     } catch (err) {
-        res.status(400).json({
+        console.log(err.message);
+        res.status(500).json({
             success: false,
-            message: `Error: ${err.message}`,
+            error: "Internal Server Error",
         });
     }
 };
 
 exports.createFavorite = async (req, res, next) => {
     try {
+        const existingCompany = await Company.findById(req.params.companyId);
+        if (!existingCompany) {
+            return res.status(404).json({
+                success: false,
+                message: `Company not found with id of ${req.params.companyId}`,
+            });
+        }
+
         const favorite = await Favorite.create({ 
             user_id: req.user.id,
             company_id: req.params.companyId,
@@ -28,9 +38,10 @@ exports.createFavorite = async (req, res, next) => {
             data: favorite,
         });
     } catch (err) {
-        res.status(400).json({
+        console.log(err.message);
+        res.status(500).json({
             success: false,
-            message: `Error: ${err.message}`,
+            error: "Internal Server Error",
         });
     }
 };
@@ -49,7 +60,7 @@ exports.deleteFavorite = async (req, res, next) => {
         if (favorite.user_id.toString() !== req.user.id) {
             return res.status(403).json({
                 success: false,
-                message: `This is not your favorite. You are not authorized to delete this favorite.`,
+                message: `User is not authorized to delete this favorite.`,
             });
         }
 
@@ -60,9 +71,10 @@ exports.deleteFavorite = async (req, res, next) => {
             data: {},
         });
     } catch (err) {
-        res.status(400).json({
+        console.log(err.message);
+        res.status(500).json({
             success: false,
-            message: `Error: ${err.message}`,
+            error: "Internal Server Error",
         });
     }
 }
