@@ -48,9 +48,10 @@ exports.getBookings = async (req, res, next) => {
       data: bookings,
     });
   } catch (error) {
+    console.log(error.message);
     res.status(500).json({
       success: false,
-      error: "Server Error",
+      error: "Internal Server Error",
     });
   }
 };
@@ -59,9 +60,9 @@ exports.getBooking = async (req, res, next) => {
   try {
     const booking = await Booking.findById(req.params.bookingId);
     if (!booking) {
-      return res.status(400).json({
+      return res.status(404).json({
         success: false,
-        error: "Booking not found",
+        error: `Booking not found with id of ${req.params.bookingId}`,
       });
     }
     if (
@@ -78,9 +79,10 @@ exports.getBooking = async (req, res, next) => {
       data: booking,
     });
   } catch (error) {
+    console.log(error.message);
     res.status(500).json({
       success: false,
-      error: "Server Error",
+      error: "Internal Server Error",
     });
   }
 };
@@ -91,9 +93,9 @@ exports.createBooking = async (req, res, next) => {
     const date = req.body.date;
     const company = await Company.findById(company_id);
     if (!company) {
-      return res.status(400).json({
+      return res.status(404).json({
         success: false,
-        error: "Company not found",
+        error: `Company not found with id of ${company_id}`,
       });
     }
     const existingBooking = await Booking.find({ user_id: req.user.id });
@@ -113,8 +115,10 @@ exports.createBooking = async (req, res, next) => {
       data: booking,
     });
   } catch (error) {
+    console.log(error.message);
     res.status(500).json({
       success: false,
+      error: "Internal Server Error",
     });
   }
 };
@@ -124,7 +128,7 @@ exports.updateBooking = async (req, res, next) => {
     const booking_id = req.params.bookingId;
     const booking = await Booking.findById(booking_id);
     if (!booking) {
-      return res.status(400).json({
+      return res.status(404).json({
         success: false,
         message: `Booking not found with id of ${booking_id}`,
       });
@@ -150,9 +154,11 @@ exports.updateBooking = async (req, res, next) => {
       success: true,
       data: update_booking,
     });
-  } catch (err) {
-    res.status(400).json({
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).json({
       success: false,
+      error: "Internal Server Error",
     });
   }
 };
@@ -162,7 +168,7 @@ exports.deleteBooking = async (req, res, next) => {
     const booking_id = req.params.bookingId;
     const booking = await Booking.findById(booking_id);
     if (!booking) {
-      return res.status(400).json({
+      return res.status(404).json({
         success: false,
         message: `Booking not found with id of ${booking_id}`,
       });
@@ -181,9 +187,11 @@ exports.deleteBooking = async (req, res, next) => {
       success: true,
       data: {},
     });
-  } catch (err) {
-    res.status(400).json({
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).json({
       success: false,
+      error: "Internal Server Error",
     });
   }
 };
