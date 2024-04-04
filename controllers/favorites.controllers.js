@@ -3,7 +3,7 @@ const Favorite = require("../models/Favorite.model");
 exports.getFavorites = async (req, res, next) => {
     try {
         const favorites = await Favorite.find({ user_id: req.user.id }).populate({ 
-            path: "companies", 
+            path: "company_id", 
             select: "company_name tel" 
         });
 
@@ -22,8 +22,8 @@ exports.getFavorites = async (req, res, next) => {
 exports.createFavorite = async (req, res, next) => {
     try {
         const favorite = await Favorite.create({ 
-            user_id: req.user.id, 
-            company_id: req.body.company_id 
+            user_id: req.user.id,
+            company_id: req.params.companyId,
         });
 
         res.status(201).json({
@@ -46,6 +46,13 @@ exports.deleteFavorite = async (req, res, next) => {
             return res.status(400).json({
                 success: false,
                 message: `Favorite not found with id of ${req.params.favoriteId}`,
+            });
+        }
+
+        if (favorite.user_id.toString() !== req.user.id) {
+            return res.status(403).json({
+                success: false,
+                message: `This is not your favorite. You are not authorized to delete this favorite.`,
             });
         }
 
