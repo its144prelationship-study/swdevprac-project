@@ -14,8 +14,10 @@ exports.register = async (req, res, next) => {
     });
     sendTokenResponse(user, 200, res);
   } catch (error) {
-    res.status(400).json({
-      success: false,
+    console.log(error.message);
+      res.status(500).json({
+        success: false,
+        error: "Internal Server Error",
     });
     console.log(error.stack);
   }
@@ -46,9 +48,10 @@ exports.login = async (req, res, next) => {
     }
     sendTokenResponse(user, 200, res);
   } catch (error) {
-    res.status(400).json({
+    console.log(error.message);
+    res.status(500).json({
       success: false,
-      error: "Cannot convert email and password to string",
+      error: "Internal Server Error",
     });
   }
 };
@@ -84,13 +87,21 @@ const sendTokenResponse = (user, statusCode, res) => {
 exports.getProfile = async (req, res, next) => {
   try {
     const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: `User not found with id of ${req.user.id}`,
+      });
+    }
     res.status(200).json({
       success: true,
       data: user,
     });
   } catch (error) {
-    res.status(400).json({
+    console.log(error.message);
+    res.status(500).json({
       success: false,
+      error: "Internal Server Error",
     });
   }
 };
@@ -111,9 +122,9 @@ exports.editProfile = async (req, res, next) => {
       email,
     });
     if (!user) {
-      return res.status(400).json({
+      return res.status(404).json({
         success: false,
-        error: "User not found",
+        error: `User not found with id of ${req.user.id}`,
       });
     }
     if (!old_password && !new_password && !confirm_new_password) {
@@ -124,8 +135,7 @@ exports.editProfile = async (req, res, next) => {
     } else if (!old_password || !new_password || !confirm_new_password) {
       return res.status(400).json({
         success: false,
-        error:
-          "Please provide old password, new password, and confirm new password",
+        error: "Please provide old password, new password, and confirm new password",
       });
     }
     if (new_password !== confirm_new_password) {
@@ -149,8 +159,10 @@ exports.editProfile = async (req, res, next) => {
     });
     sendTokenResponse(user_pass, 200, res);
   } catch (error) {
-    res.status(400).json({
+    console.log(error.message);
+    res.status(500).json({
       success: false,
+      error: "Internal Server Error",
     });
   }
 };
