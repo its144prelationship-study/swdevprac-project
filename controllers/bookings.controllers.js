@@ -3,32 +3,31 @@ const Company = require("../models/Company.model");
 
 exports.getBookings = async (req, res, next) => {
   try {
+    let queryBody = {};
+    var query;
     if (req.user.role === "ADMIN") {
-      let queryBody = {};
       if (req.params.companyId) {
-        queryBody = { company_id: req.params.companyId };
+        queryBody.company_id = req.params.companyId;
       }
-      const bookings = await Booking.find(queryBody)
+      query = Booking.find(queryBody)
         .populate("user_id", "name email tel")
         .populate("company_id", "company_name tel receiving_pos");
-      return res.status(200).json({
-        success: true,
-        data: bookings,
-      });
     } else {
-      let queryBody = { user_id: req.user.id };
+      queryBody.user_id = req.user.id;
       if (req.params.companyId) {
-        queryBody = { user_id: req.user.id, company_id: req.params.companyId };
+        queryBody.company_id = req.params.companyId;
       }
-      const bookings = await Booking.find(queryBody).populate(
+      query = Booking.find(queryBody).populate(
         "company_id",
         "company_name tel receiving_pos"
       );
-      return res.status(200).json({
-        success: true,
-        data: bookings,
-      });
     }
+    const bookings = await query;
+    return res.status(200).json({
+      success: true,
+      count: bookings.length,
+      data: bookings,
+    });
   } catch (error) {
     res.status(500).json({
       success: false,
