@@ -130,7 +130,7 @@ exports.updateBooking = async (req, res, next) => {
     if (!booking) {
       return res.status(404).json({
         success: false,
-        message: `Booking not found with id of ${booking_id}`,
+        error: `Booking not found with id of ${booking_id}`,
       });
     }
     if (
@@ -139,7 +139,7 @@ exports.updateBooking = async (req, res, next) => {
     ) {
       return res.status(403).json({
         success: false,
-        message: "User is not authorized to update this booking",
+        error: "User is not authorized to update this booking",
       });
     }
     const update_booking = await Booking.findByIdAndUpdate(
@@ -170,7 +170,7 @@ exports.deleteBooking = async (req, res, next) => {
     if (!booking) {
       return res.status(404).json({
         success: false,
-        message: `Booking not found with id of ${booking_id}`,
+        error: `Booking not found with id of ${booking_id}`,
       });
     }
     if (
@@ -179,7 +179,7 @@ exports.deleteBooking = async (req, res, next) => {
     ) {
       return res.status(403).json({
         success: false,
-        message: "User is not authorized to delete this booking",
+        error: "User is not authorized to delete this booking",
       });
     }
     await booking.deleteOne();

@@ -24,7 +24,7 @@ exports.createFavorite = async (req, res, next) => {
         if (!existingCompany) {
             return res.status(404).json({
                 success: false,
-                message: `Company not found with id of ${req.params.companyId}`,
+                error: `Company not found with id of ${req.params.companyId}`,
             });
         }
 
@@ -53,14 +53,14 @@ exports.deleteFavorite = async (req, res, next) => {
         if (!favorite) {
             return res.status(400).json({
                 success: false,
-                message: `Favorite not found with id of ${req.params.favoriteId}`,
+                error: `Favorite not found with id of ${req.params.favoriteId}`,
             });
         }
 
         if (favorite.user_id.toString() !== req.user.id) {
             return res.status(403).json({
                 success: false,
-                message: `User is not authorized to delete this favorite.`,
+                error: `User is not authorized to delete this favorite.`,
             });
         }
 

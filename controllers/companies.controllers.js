@@ -25,7 +25,7 @@ exports.getCompanies = async (req, res, next) => {
             if (!isVerified) {
                 return res.status(400).json({
                     success: false,
-                    message: `Field '${field}' is not a valid field`,
+                    error: `Field '${field}' is not a valid field`,
                 });
             }
 
@@ -42,7 +42,7 @@ exports.getCompanies = async (req, res, next) => {
             if (!isVerified) {
                 return res.status(400).json({
                     success: false,
-                    message: `Field '${field}' is not a valid field`,
+                    error: `Field '${field}' is not a valid field`,
                 });
             }
 
@@ -121,7 +121,7 @@ exports.getCompany = async (req, res, next) => {
         if (!company) {
             return res.status(400).json({
                 success: false,
-                message: `Company not found with id of ${req.params.companyId}`,
+                error: `Company not found with id of ${req.params.companyId}`,
             });
         }
 
@@ -130,9 +130,10 @@ exports.getCompany = async (req, res, next) => {
             data: company,
         });
     } catch (err) {
-        res.status(400).json({
+        console.log(err.message);
+        res.status(500).json({
             success: false,
-            message: `Error: ${err.message}`,
+            error: "Internal Server Error",
         });
     }
 };
@@ -143,7 +144,7 @@ exports.createCompany = async (req, res, next) => {
         if (existingCompany) {
             return res.status(400).json({
                 success: false,
-                message: `Company with name '${req.body.company_name}' already exists`,
+                error: `Company with name '${req.body.company_name}' already exists`,
             });
         }
 
@@ -172,7 +173,7 @@ exports.updateCompany = async (req, res, next) => {
         if (!company) {
             return res.status(404).json({
                 success: false,
-                message: `Company not found with id of ${req.params.companyId}`,
+                error: `Company not found with id of ${req.params.companyId}`,
             });
         }
 
@@ -196,7 +197,7 @@ exports.deleteCompany = async (req, res, next) => {
         if (!company) {
             return res.status(404).json({
                 success: false,
-                message: `Company not found with id of ${req.params.companyId}`,
+                error: `Company not found with id of ${req.params.companyId}`,
             });
         }
 
