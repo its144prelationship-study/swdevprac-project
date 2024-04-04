@@ -8,7 +8,7 @@ dotenv.config({ path: "./config/config.env" });
 connectDB();
 
 const app = express();
-const auth = require("./routes/auth");
+const auth = require("./routes/auth.routes");
 const companies = require("./routes/companies.routes");
 const bookings = require("./routes/bookings.routes");
 const favorites = require("./routes/favorites.routes");
