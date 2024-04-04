@@ -106,9 +106,10 @@ exports.getCompanies = async (req, res, next) => {
             data: companies,
         });
     } catch (err) {
-        res.status(400).json({
+        console.log(err.message);
+        res.status(500).json({
             success: false,
-            message: `Error: ${err.message}`,
+            error: "Internal Server Error",
         });
     }
 };
@@ -138,6 +139,14 @@ exports.getCompany = async (req, res, next) => {
 
 exports.createCompany = async (req, res, next) => {
     try {
+        const existingCompany = await Company.findOne({ company_name: req.body.company_name });
+        if (existingCompany) {
+            return res.status(400).json({
+                success: false,
+                message: `Company with name '${req.body.company_name}' already exists`,
+            });
+        }
+
         const company = await Company.create(req.body);
 
         res.status(201).json({
@@ -145,9 +154,10 @@ exports.createCompany = async (req, res, next) => {
             data: company,
         });
     } catch (err) {
-        res.status(400).json({
+        console.log(err.message);
+        res.status(500).json({
             success: false,
-            message: `Error: ${err.message}`,
+            error: "Internal Server Error",
         });
     }
 };
@@ -160,7 +170,7 @@ exports.updateCompany = async (req, res, next) => {
         });
 
         if (!company) {
-            return res.status(400).json({
+            return res.status(404).json({
                 success: false,
                 message: `Company not found with id of ${req.params.companyId}`,
             });
@@ -171,9 +181,10 @@ exports.updateCompany = async (req, res, next) => {
             data: company,
         });
     } catch (err) {
-        res.status(400).json({
+        console.log(err.message);
+        res.status(500).json({
             success: false,
-            message: `Error: ${err.message}`,
+            error: "Internal Server Error",
         });
     }
 };
@@ -183,7 +194,7 @@ exports.deleteCompany = async (req, res, next) => {
         const company = await Company.findByIdAndDelete(req.params.companyId);
 
         if (!company) {
-            return res.status(400).json({
+            return res.status(404).json({
                 success: false,
                 message: `Company not found with id of ${req.params.companyId}`,
             });
@@ -194,9 +205,10 @@ exports.deleteCompany = async (req, res, next) => {
             data: {},
         });
     } catch (err) {
-        res.status(400).json({
+        console.log(err.message);
+        res.status(500).json({
             success: false,
-            message: `Error: ${err.message}`,
+            error: "Internal Server Error",
         });
     }
 };
