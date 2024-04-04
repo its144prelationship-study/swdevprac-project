@@ -13,4 +13,6 @@ const FavoriteSchema = new mongoose.Schema({
     }
 });
 
+FavoriteSchema.index({ user_id: 1, company_id: 1 }, { unique: true });
+
 module.exports = mongoose.model("Favorites", FavoriteSchema);

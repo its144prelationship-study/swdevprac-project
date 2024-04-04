@@ -2,10 +2,7 @@ const Favorite = require("../models/Favorite.model");
 
 exports.getFavorites = async (req, res, next) => {
     try {
-        const favorites = await Favorite.find({ user_id: req.user.id }).populate({ 
-            path: "company_id", 
-            select: "company_name tel" 
-        });
+        const favorites = await Favorite.find({ user_id: req.user.id }).populate("company_id", "company_name tel receiving_pos");
 
         res.status(200).json({
             success: true,
