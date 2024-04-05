@@ -15,9 +15,9 @@ exports.register = async (req, res, next) => {
     sendTokenResponse(user, 200, res);
   } catch (error) {
     console.log(error.message);
-      res.status(500).json({
-        success: false,
-        error: "Internal Server Error",
+    res.status(500).json({
+      success: false,
+      error: "Internal Server Error",
     });
     console.log(error.stack);
   }
@@ -108,14 +108,7 @@ exports.getProfile = async (req, res, next) => {
 
 exports.editProfile = async (req, res, next) => {
   try {
-    const {
-      name,
-      tel,
-      email,
-      old_password,
-      new_password,
-      confirm_new_password,
-    } = req.body;
+    const { name, tel, email } = req.body;
     const user = await User.findByIdAndUpdate(req.user.id, {
       name,
       tel,
@@ -127,15 +120,27 @@ exports.editProfile = async (req, res, next) => {
         error: `User not found with id of ${req.user.id}`,
       });
     }
-    if (!old_password && !new_password && !confirm_new_password) {
-      return res.status(200).json({
-        success: true,
-        error: "User updated successfully",
-      });
-    } else if (!old_password || !new_password || !confirm_new_password) {
+    res.status(200).json({
+      success: true,
+      error: "User updated successfully",
+    });
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).json({
+      success: false,
+      error: "Internal Server Error",
+    });
+  }
+};
+
+exports.editPassword = async (req, res, next) => {
+  try {
+    const { old_password, new_password, confirm_new_password } = req.body;
+    if (!old_password || !new_password || !confirm_new_password) {
       return res.status(400).json({
         success: false,
-        error: "Please provide old password, new password, and confirm new password",
+        error:
+          "Please provide old password, new password, and confirm new password",
       });
     }
     if (new_password !== confirm_new_password) {
