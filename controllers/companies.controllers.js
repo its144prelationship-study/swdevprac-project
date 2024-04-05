@@ -116,7 +116,7 @@ exports.getCompany = async (req, res, next) => {
             data: company,
         });
     } catch (err) {
-
+        console.log(err.message);
         res.status(500).json({
             success: false,
             error: "Internal Server Error",
@@ -126,6 +126,14 @@ exports.getCompany = async (req, res, next) => {
 
 exports.createCompany = async (req, res, next) => {
     try {
+        const body = req.body;
+        if (!body.company_name || !body.address || !body.tel) {
+            return res.status(400).json({
+                success: false,
+                error: "Please provide 'company_name', 'address', and 'tel'",
+            });
+        }
+               
         const existingCompany = await Company.findOne({ company_name: req.body.company_name });
         if (existingCompany) {
             return res.status(400).json({
@@ -141,7 +149,7 @@ exports.createCompany = async (req, res, next) => {
             data: company,
         });
     } catch (err) {
-
+        console.log(err.message);
         res.status(500).json({
             success: false,
             error: "Internal Server Error",
@@ -151,6 +159,16 @@ exports.createCompany = async (req, res, next) => {
 
 exports.updateCompany = async (req, res, next) => {
     try {
+        const existingCompany = await Company.findOne({ company_name: req.body.company_name });
+        if (existingCompany) { 
+            if (existingCompany.id !== req.params.companyId) {
+                return res.status(400).json({
+                    success: false,
+                    error: `Company with name '${req.body.company_name}' already exists`,
+                });
+            }
+        }
+
         const company = await Company.findByIdAndUpdate(req.params.companyId, req.body, {
             new: true,
             runValidators: true,
@@ -168,7 +186,7 @@ exports.updateCompany = async (req, res, next) => {
             data: company,
         });
     } catch (err) {
-
+        console.log(err.message);
         res.status(500).json({
             success: false,
             error: "Internal Server Error",
@@ -192,7 +210,7 @@ exports.deleteCompany = async (req, res, next) => {
             data: {},
         });
     } catch (err) {
-
+        console.log(err.message);
         res.status(500).json({
             success: false,
             error: "Internal Server Error",
