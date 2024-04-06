@@ -5,18 +5,22 @@ exports.getBookings = async (req, res, next) => {
   try {
     let queryBody = {};
     var query;
-    if (req.user.role === "ADMIN") {
-      if (req.params.companyId) {
-        queryBody.company_id = req.params.companyId;
+    if (req.params.companyId) {
+      const existingCompany = await Company.findById(req.params.companyId);
+      if (!existingCompany) {
+        return res.status(404).json({
+          success: false,
+          error: `Company not found with id of ${req.params.companyId}`,
+        });
       }
+      queryBody.company_id = req.params.companyId;
+    }
+    if (req.user.role === "ADMIN") {
       query = Booking.find(queryBody)
         .populate("user_id", "name email tel")
         .populate("company_id", "company_name tel receiving_pos");
     } else {
       queryBody.user_id = req.user.id;
-      if (req.params.companyId) {
-        queryBody.company_id = req.params.companyId;
-      }
       query = Booking.find(queryBody).populate(
         "company_id",
         "company_name tel receiving_pos"
@@ -105,6 +109,23 @@ exports.createBooking = async (req, res, next) => {
         error: "You have reached the maximum number of bookings",
       });
     }
+    if (!inDateRange(date)) {
+      return res.status(400).json({
+        success: false,
+        error: "Booking date must be between 10th and 13th April 2022",
+      });
+    }
+    const dup_booking = await Booking.find({
+      user_id: req.user.id,
+      company_id,
+      date,
+    });
+    if (dup_booking) {
+      return res.status(400).json({
+        success: false,
+        error: "You have already made a booking for this date",
+      });
+    }
     const booking = await Booking.create({
       user_id: req.user.id,
       company_id,
@@ -131,6 +152,23 @@ exports.updateBooking = async (req, res, next) => {
       return res.status(404).json({
         success: false,
         error: `Booking not found with id of ${booking_id}`,
+      });
+    }
+    if (!inDateRange(req.body.date)) {
+      return res.status(400).json({
+        success: false,
+        error: "Booking date must be between 10th and 13th April 2022",
+      });
+    }
+    const dup_booking = await Booking.find({
+      user_id: req.user.id,
+      company_id: req.body.company_id,
+      date: req.body.date,
+    });
+    if (dup_booking) {
+      return res.status(400).json({
+        success: false,
+        error: "You have already made a booking for this date",
       });
     }
     if (
@@ -195,3 +233,7 @@ exports.deleteBooking = async (req, res, next) => {
     });
   }
 };
+
+const inDateRange = (date) => {
+  return date >= new Date(2022-4-10) && date <= new Date(2022-4-13);
+}
