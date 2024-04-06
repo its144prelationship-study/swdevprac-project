@@ -1,4 +1,6 @@
 const Company = require("../models/Company.model");
+const Booking = require("../models/Booking.model");
+const Favorite = require("../models/Favorite.model");
 
 const companyFields = Object.keys(Company.schema.obj);
 companyFields.push("_id");
@@ -204,6 +206,9 @@ exports.deleteCompany = async (req, res, next) => {
                 error: `Company not found with id of ${req.params.companyId}`,
             });
         }
+
+        await Booking.deleteMany({ company_id: req.params.companyId });
+        await Favorite.deleteMany({ company_id: req.params.companyId });
 
         res.status(200).json({
             success: true,
