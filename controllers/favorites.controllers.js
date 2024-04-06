@@ -18,7 +18,7 @@ exports.getFavorites = async (req, res, next) => {
     }
 };
 
-exports.createFavorite = async (req, res, next) => {
+exports.addFavorite = async (req, res, next) => {
     try {
         const existingCompany = await Company.findById(req.params.companyId);
         if (!existingCompany) {
@@ -46,12 +46,12 @@ exports.createFavorite = async (req, res, next) => {
     }
 };
 
-exports.deleteFavorite = async (req, res, next) => {
+exports.removeFavorite = async (req, res, next) => {
     try {
         const favorite = await Favorite.findById(req.params.favoriteId);
 
         if (!favorite) {
-            return res.status(400).json({
+            return res.status(404).json({
                 success: false,
                 error: `Favorite not found with id of ${req.params.favoriteId}`,
             });
