@@ -28,6 +28,17 @@ exports.addFavorite = async (req, res, next) => {
             });
         }
 
+        const existingFavorite = await Favorite.findOne({
+            user_id: req.user.id,
+            company_id: req.params.companyId,
+        });
+        if (existingFavorite) {
+            return res.status(400).json({
+                success: false,
+                error: `This Company with id '${req.params.companyId}'is already in your favorite list`
+            });
+        }
+
         const favorite = await Favorite.create({ 
             user_id: req.user.id,
             company_id: req.params.companyId,
