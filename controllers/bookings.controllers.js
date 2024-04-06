@@ -112,10 +112,10 @@ exports.createBooking = async (req, res, next) => {
     if (!inDateRange(date)) {
       return res.status(400).json({
         success: false,
-        error: "Booking date must be between 10th and 13th April 2022",
+        error: "Booking date must be between 10th and 13th May 2022",
       });
     }
-    const dup_booking = await Booking.find({
+    const dup_booking = await Booking.findOne({
       user_id: req.user.id,
       company_id,
       date,
@@ -154,13 +154,22 @@ exports.updateBooking = async (req, res, next) => {
         error: `Booking not found with id of ${booking_id}`,
       });
     }
-    if (!inDateRange(req.body.date)) {
-      return res.status(400).json({
+    if (
+      booking.user_id.toString() !== req.user.id &&
+      req.user.role !== "ADMIN"
+    ) {
+      return res.status(403).json({
         success: false,
-        error: "Booking date must be between 10th and 13th April 2022",
+        error: "User is not authorized to update this booking",
       });
     }
-    const dup_booking = await Booking.find({
+    if (req.body.date && !inDateRange(req.body.date)) {
+      return res.status(400).json({
+        success: false,
+        error: "Booking date must be between 10th and 13th May 2022",
+      });
+    }
+    const dup_booking = await Booking.findOne({
       user_id: req.user.id,
       company_id: req.body.company_id,
       date: req.body.date,
@@ -169,15 +178,6 @@ exports.updateBooking = async (req, res, next) => {
       return res.status(400).json({
         success: false,
         error: "You have already made a booking for this date",
-      });
-    }
-    if (
-      booking.user_id.toString() !== req.user.id &&
-      req.user.role !== "ADMIN"
-    ) {
-      return res.status(403).json({
-        success: false,
-        error: "User is not authorized to update this booking",
       });
     }
     const update_booking = await Booking.findByIdAndUpdate(
@@ -235,5 +235,6 @@ exports.deleteBooking = async (req, res, next) => {
 };
 
 const inDateRange = (date) => {
-  return date >= new Date(2022-4-10) && date <= new Date(2022-4-13);
+  date = new Date(date);
+  return date >= new Date("2022-5-10") && date <= new Date("2022-5-13");
 }
