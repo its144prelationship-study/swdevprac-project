@@ -1,0 +1,16 @@
+@startuml Logout (GET)
+
+header Logout Sequence Diagram
+title "Logout (GET)"
+
+participant "Client" as client
+participant "<<javaScript>>\n:server" as server
+participant "<<router>>\n:auth" as routerAuth
+participant "<<controllers>>\n:auth" as controllersAuth
+
+client->server ++:req.get('/auth/logout')
+server->routerAuth ++:app.use("/auth", auth)
+routerAuth -> controllersAuth ++:logout(req, res, next)
+controllersAuth->client --: response
+
+@enduml
