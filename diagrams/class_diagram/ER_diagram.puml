@@ -1,0 +1,47 @@
+@startuml Online Jobfair ER Diagram
+
+
+entity "User" as user {
+    *_id : ObjectId <<generated>>
+    --
+    *name : String
+    *tel : String
+    *email : String
+    *password : String
+    *role : enum("USER", "ADMIN")
+    *created_at : Date
+}
+
+entity "Company" as company {
+    *_id : ObjectId <<generated>>
+    --
+    *company_name : String
+    *address : String
+    *website : String
+    *description : String
+    *tel : String
+    *receiving_pos : String[]
+}
+
+entity "Booking" as booking {
+    *_id : ObjectId <<generated>>
+    --
+    *user_id : ObjectId <<FK>>
+    *company_id : ObjectId <<FK>>
+    *date : Date
+    *created_at : Date
+}
+
+entity "Favorite" as favorite {
+    *_id : ObjectId <<generated>>
+    --
+    *user_id : ObjectId <<FK>>
+    *company_id : ObjectId <<FK>>
+}
+
+user ||--o{ booking
+company ||--o{ booking
+user ||--o{ favorite
+company ||--o{ favorite
+
+@enduml
