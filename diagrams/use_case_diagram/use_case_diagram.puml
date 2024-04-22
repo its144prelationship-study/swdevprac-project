@@ -1,0 +1,57 @@
+@startuml Online Jobfair Use Case Diagram
+left to right direction
+actor "User" as user
+rectangle "Online Jobfair" as jobfair {
+    rectangle "Registration\nand\nLogin System" as registration {
+        usecase "Register" as register
+        usecase "Login" as login
+        usecase "View\nProfile" as viewProfile
+        usecase "Edit\nProfile" as editProfile
+        usecase "Edit\nPassword" as editPassword
+        usecase "Logout" as logout
+    }
+    rectangle "Booking System" as booking {
+        usecase "Create\nBooking" as createBooking
+        usecase "View my\nBookings" as viewMyBookings
+        usecase "View all\nBookings" as viewAllBookings
+        usecase "Edit\nBooking" as editBooking
+        usecase "Delete\nBooking" as deleteBooking
+    }
+    rectangle "Company System" as company {
+        usecase "Create\nCompany" as createCompany
+        usecase "View\nCompany" as viewCompany
+        usecase "Edit\nCompany" as editCompany
+        usecase "Delete\nCompany" as deleteCompany
+    }
+}
+actor "Admin" as admin
+
+user -- register
+user -- login
+user -- viewProfile
+user -- editProfile
+user -- editPassword
+user -- logout
+user -- createBooking
+user -- viewMyBookings
+user -- editBooking
+user -- deleteBooking
+user -- viewCompany
+
+register -- admin
+login -- admin
+viewProfile -- admin
+editProfile -- admin
+editPassword -- admin
+logout -- admin
+createBooking -- admin
+viewMyBookings -- admin
+viewAllBookings -- admin
+editBooking -- admin
+deleteBooking -- admin
+createCompany -- admin
+viewCompany -- admin
+editCompany -- admin
+deleteCompany -- admin
+
+@enduml
