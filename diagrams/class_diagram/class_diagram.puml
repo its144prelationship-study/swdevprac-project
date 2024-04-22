@@ -1,0 +1,63 @@
+@startuml Online Jobfair Class Diagram
+skinparam linetype ortho
+
+class User {
+    - _id : ObjectId
+    - name : String
+    - tel : String
+    - email : String
+    - password : String
+    - role : enum("USER", "ADMIN")
+    - created_at : Date
+    + register(req, res, next) : void
+    + login(req, res, next) : void
+    + logout(req, res, next) : void
+    + getProfile(req, res, next) : void
+    + editProfile(req, res, next) : void
+    + editPassword(req, res, next) : void
+    + sendTokenResponse(user, statusCode, res) : void
+}
+
+class Company {
+    - _id : ObjectId
+    - company_name : String
+    - address : String
+    - website : String
+    - description : String
+    - tel : String
+    - receiving_pos : String[]
+    + getCompanies(req, res, next) : void
+    + getCompany(req, res, next) : void
+    + createCompany(req, res, next) : void
+    + updateCompany(req, res, next) : void
+    + deleteCompany(req, res, next) : void
+}
+
+class Booking {
+    - _id : ObjectId
+    - user_id : ObjectId
+    - company_id : ObjectId
+    - date : Date
+    - created_at : Date
+    + getBookings(req, res, next) : void
+    + getBooking(req, res, next) : void
+    + createBooking(req, res, next) : void
+    + updateBooking(req, res, next) : void
+    + deleteBooking(req, res, next) : void
+}
+
+class Favorite {
+    - _id : ObjectId
+    - user_id : ObjectId
+    - company_id : ObjectId
+    + getFavorites(req, res, next) : void
+    + addFavorites(req, res, next) : void
+    + removeFavorite(req, res, next) : void
+}
+
+User "1" -- "0..3" Booking : has
+Company "1" -- "0..*" Booking : has
+User "1" -- "0..*" Favorite : has
+Company "1" -- "0..*" Favorite : has
+
+@enduml
