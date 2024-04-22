@@ -1,0 +1,22 @@
+@startuml Get Single Company (GET)
+
+header Get Single Company Sequence Diagram
+title "Get Single Company (GET)"
+
+participant "Client" as client
+participant "<<javaScript>>\n:server" as server
+participant "<<router>>\n:companies" as routerCompanies
+participant "<<controllers>>\n:companies" as controllersCompanies
+participant "<<model>>\n:Company" as modelCompanies
+database "<<MongoDB>>\n:companies" as CompaniesDatabase
+
+client -> server ++:req.get('/companies/:companyId')
+server -> routerCompanies ++:app.use("/companies", companies)
+routerCompanies -> controllersCompanies ++:getCompany(req, res, next)
+controllersCompanies -> modelCompanies ++:findById(req.params.companyId)
+modelCompanies -> CompaniesDatabase ++: CompanySchema
+CompaniesDatabase --> modelCompanies --: company
+controllersCompanies <-- modelCompanies --: company
+controllersCompanies -> client --: response
+
+@enduml

@@ -1,0 +1,26 @@
+@startuml Update Single Company (PUT)
+
+header Update Single Company Sequence Diagram
+title "Update Single Company (PUT)"
+
+participant "Client" as client
+participant "<<javaScript>>\n:server" as server
+participant "<<router>>\n:companies" as routerCompanies
+participant "<<controllers>>\n:companies" as controllersCompanies
+participant "<<model>>\n:Company" as modelCompanies
+database "<<MongoDB>>\n:companies" as CompaniesDatabase
+
+client -> server ++:req.post('/companies/:company_id')
+server -> routerCompanies ++:app.use("/companies", companies)
+routerCompanies -> controllersCompanies ++:updateCompany(req, res, next)
+controllersCompanies -> modelCompanies ++:findOne(req.body.company_name)
+modelCompanies -> CompaniesDatabase ++: CompanySchema
+CompaniesDatabase --> modelCompanies --: company
+controllersCompanies <-- modelCompanies --: company
+controllersCompanies -> modelCompanies ++:findByIdAndUpdate(req.params.companyId,\nreq.body)
+modelCompanies -> CompaniesDatabase ++: CompanySchema
+CompaniesDatabase --> modelCompanies --: company
+controllersCompanies <-- modelCompanies --: company
+controllersCompanies -> client --: response
+
+@enduml

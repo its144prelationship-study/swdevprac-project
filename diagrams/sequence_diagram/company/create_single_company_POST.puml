@@ -1,0 +1,26 @@
+@startuml Create Single Company (POST)
+
+header Create Single Company Sequence Diagram
+title "Create Single Company (POST)"
+
+participant "Client" as client
+participant "<<javaScript>>\n:server" as server
+participant "<<router>>\n:companies" as routerCompanies
+participant "<<controllers>>\n:companies" as controllersCompanies
+participant "<<model>>\n:Company" as modelCompanies
+database "<<MongoDB>>\n:companies" as CompaniesDatabase
+
+client -> server ++:req.post('/companies')
+server -> routerCompanies ++:app.use("/companies", companies)
+routerCompanies -> controllersCompanies ++:createCompany(req, res, next)
+controllersCompanies -> modelCompanies ++:findOne(req.body.company_name)
+modelCompanies -> CompaniesDatabase ++: CompanySchema
+CompaniesDatabase --> modelCompanies --: company
+controllersCompanies <-- modelCompanies --: company
+controllersCompanies -> modelCompanies ++:create(req.body)
+modelCompanies -> CompaniesDatabase ++: CompanySchema
+CompaniesDatabase --> modelCompanies --: company
+controllersCompanies <-- modelCompanies --: company
+controllersCompanies -> client --: response
+
+@enduml
