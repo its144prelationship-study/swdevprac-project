@@ -12,7 +12,7 @@ exports.register = async (req, res, next) => {
       role,
       create_at,
     });
-    sendTokenResponse(user, 200, res);
+    sendTokenResponse(user, 201, res);
   } catch (error) {
     console.log(error.message);
     res.status(500).json({
@@ -34,9 +34,9 @@ exports.login = async (req, res, next) => {
     }
     const user = await User.findOne({ email }).select("+password");
     if (!user) {
-      return res.status(401).json({
+      return res.status(404).json({
         success: false,
-        error: "Invalid credentials",
+        error: `User not found with email of ${email}`,
       });
     }
     const isMatch = await user.matchPassword(password);
