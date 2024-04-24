@@ -17,10 +17,14 @@ controllersCompanies -> modelCompanies ++:findOne(req.body.company_name)
 modelCompanies -> CompaniesDatabase ++: CompanySchema
 CompaniesDatabase --> modelCompanies --: company
 controllersCompanies <-- modelCompanies --: company
-controllersCompanies -> modelCompanies ++:findByIdAndUpdate(req.params.companyId,\nreq.body)
-modelCompanies -> CompaniesDatabase ++: CompanySchema
-CompaniesDatabase --> modelCompanies --: company
-controllersCompanies <-- modelCompanies --: company
-controllersCompanies -> client --: response
+alt company
+    controllersCompanies -> modelCompanies ++:findByIdAndUpdate(req.params.companyId,\nreq.body)
+    modelCompanies -> CompaniesDatabase ++: CompanySchema
+    CompaniesDatabase --> modelCompanies --: company
+    controllersCompanies <-- modelCompanies --: company
+    controllersCompanies -> client : response
+else !company
+    controllersCompanies -> client --: response
+end
 
 @enduml

@@ -21,14 +21,17 @@ controllersCompanies -> modelCompanies ++:findByIdAndDelete(req.params.companyId
 modelCompanies -> CompaniesDatabase ++: CompanySchema
 CompaniesDatabase --> modelCompanies --: company
 controllersCompanies <-- modelCompanies --: company
-controllersCompanies -> modelBookings ++:deleteMany(req.params.companyId)
-modelBookings -> BookingsDatabase ++: BookingSchema
-BookingsDatabase --> modelBookings --: bookings
-controllersCompanies <-- modelBookings --: bookings
-controllersCompanies -> modelFavorites ++:deleteMany(req.params.companyId)
-modelFavorites -> FavoritesDatabase ++: FavoriteSchema
-FavoritesDatabase --> modelFavorites --: favorites
-controllersCompanies <-- modelFavorites --: favorites
-controllersCompanies -> client --: response
-
+alt company
+    controllersCompanies -> modelBookings ++:deleteMany(req.params.companyId)
+    modelBookings -> BookingsDatabase ++: BookingSchema
+    BookingsDatabase --> modelBookings --: bookings
+    controllersCompanies <-- modelBookings --: bookings
+    controllersCompanies -> modelFavorites ++:deleteMany(req.params.companyId)
+    modelFavorites -> FavoritesDatabase ++: FavoriteSchema
+    FavoritesDatabase --> modelFavorites --: favorites
+    controllersCompanies <-- modelFavorites --: favorites
+    controllersCompanies -> client : response
+else !company
+    controllersCompanies -> client --: response
+end
 @enduml

@@ -17,6 +17,10 @@ controllersCompanies -> modelCompanies ++:find(req.query)
 modelCompanies -> CompaniesDatabase ++: CompanySchema
 CompaniesDatabase --> modelCompanies --: companies
 controllersCompanies <-- modelCompanies --: companies
+controllersCompanies -> modelCompanies ++:countDocuments(req.query)
+modelCompanies -> CompaniesDatabase ++: CompanySchema
+CompaniesDatabase --> modelCompanies --: total
+controllersCompanies <-- modelCompanies --: total
 controllersCompanies -> client --: response
 
 @enduml
