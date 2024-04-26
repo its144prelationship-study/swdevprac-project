@@ -17,6 +17,18 @@ controllersAuth->modelUser ++:findOne(req.body.email)\n.select("+password")
 modelUser ->UsersDatabase ++: UserSchema
 UsersDatabase --> modelUser --: user
 controllersAuth <-- modelUser --: user
-controllersAuth->client --: response
+alt !user
+    controllersAuth -> client : response
+else user
+    controllersAuth -> modelUser ++: matchPassword(password)
+    controllersAuth <-- modelUser --: isMatch
+    alt !isMatch
+        controllersAuth -> client : response
+    else isMatch
+        controllersAuth -> modelUser ++: getSignedJwtToken()
+        controllersAuth <-- modelUser --: token
+    end
+    controllersAuth->client --: response
+end
 
 @enduml

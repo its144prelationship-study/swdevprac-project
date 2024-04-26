@@ -17,6 +17,8 @@ controllersAuth->modelUser ++:create(req.body)
 modelUser ->UsersDatabase ++: UserSchema
 UsersDatabase --> modelUser --: user
 controllersAuth <-- modelUser --: user
+controllersAuth -> modelUser ++: getSignedJwtToken()
+controllersAuth <-- modelUser --: token
 controllersAuth->client --: response
 
 @enduml
