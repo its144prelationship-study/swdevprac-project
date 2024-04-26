@@ -1,0 +1,136 @@
+@startuml Online Jobfair Class Diagram : UML profile
+left to right direction
+skinparam linetype polyline
+package "OnlineJobfair"{
+    class "<<Application>>\nService" as Service{}
+
+    class "<<Resource>>\nAuth" as ResourceAuth{
+    }
+
+    class "<<Resource>>\nRegister" as ResourceRegister {
+        <<POST>> +register(): User
+    }
+
+    class "<<Resource>>\nLogin" as ResourceLogin {
+        <<POST>> +login(): User
+    }
+    
+    class "<<Resource>>\nLogout" as ResourceLogout {
+        <<GET>> +logout(): void
+    }
+
+    class "<<Resource>>\nProfile" as ResourceProfile {
+        <<GET>> +getProfile(): User
+        <<PUT>> +editProfile(): User
+    }
+
+    class "<<Resource>>\nPassword" as ResourcePassword {
+        <<PUT>> +editPassword(): void
+    }
+
+    class "<<Representation>>\nUser" as RepresentationUser {
+        - _id
+        - name
+        - tel
+        - email
+        - password
+        - role
+        - created_at
+    }
+
+    class "<<Resource>>\nCompanies" as ResourceCompanies{
+        <<GET>> +getCompanies(): Company
+        <<POST>> +createCompany(): Company
+    }
+
+    class "<<Resource>>\nCompany" as ResourceCompany {
+        <<GET>> +getCompany(): Company
+        <<PUT>> +updateCompany(): Company
+        <<DELETE>> +deleteCompany(): void
+    }
+
+    class "<<Representation>>\nCompany" as RepresentationCompany {
+        - _id
+        - company_name
+        - address
+        - website
+        - description
+        - tel
+        - receiving_pos
+    }
+
+    class "<<Resource>>\nBookings" as ResourceBookings{
+        <<GET>> +getBookings(): Booking
+    }
+
+    class "<<Resource>>\nBooking" as ResourceBooking {
+        <<GET>> +getBooking(): Booking
+        <<PUT>> +updateBooking(): Booking
+        <<DELETE>> +deleteBooking(): void
+    }
+
+    class "<<Representation>>\nBooking" as RepresentationBooking {
+        - _id
+        - user_id
+        - company_id
+        - date
+        - created_at
+    }
+
+    class "<<Resource>>\nCompanyBooking" as ResourceCompanyBooking {
+        <<GET>> +getBookings(): Booking
+        <<POST>> +createBookings(): Booking
+    }
+
+    class "<<Resource>>\nFavorites" as ResourceFavorites{
+        <<GET>> +getFavorites(): Favorite
+    }
+
+    class "<<Resource>>\nFavorite" as ResourceFavorite {
+        <<DELETE>> +removeFavorite(): void
+    }
+
+    class "<<Representation>>\nFavorite" as RepresentationFavorite {
+        - _id
+        - user_id
+        - company_id
+    }
+
+    class "<<Resource>>\nCompanyFavorite" as ResourceCompanyFavorite {
+        <<POST>> +addFavorite(): Favorite
+    }
+}
+
+Service ..> ResourceAuth:"/auth\n<<Path>>"
+ResourceAuth ..> ResourceRegister: "/register\n<<Path>>"
+ResourceAuth ..> ResourceLogin: "/login\n<<Path>>"
+ResourceAuth ..> ResourceLogout: "/logout\n<<Path>>"
+ResourceAuth ..> ResourceProfile: "/profile\n<<Path>>"
+ResourceProfile ..> ResourcePassword: "/password\n<<Path>>"
+ResourceRegister ..> RepresentationUser: "<<use>>"
+ResourceLogin ..> RepresentationUser: "<<use>>"
+ResourceLogout ..> RepresentationUser: "<<use>>"
+ResourceProfile ..> RepresentationUser: "<<use>>"
+ResourcePassword ..> RepresentationUser: "<<use>>"
+
+Service ..> ResourceCompanies:"/companies\n<<Path>>"
+ResourceCompanies ..> ResourceCompany: "/{companyId}\n<<Path>>"
+ResourceCompany ..> RepresentationCompany: "<<use>>"
+
+Service ..> ResourceBookings:"/bookings\n<<Path>>"
+ResourceBookings ..> ResourceBooking: "/{bookingId}\n<<Path>>"
+ResourceBooking ..> RepresentationBooking: "<<use>>"
+
+ResourceCompany ..> ResourceCompanyBooking: "/bookings\n<<Path>>"
+ResourceCompanyBooking ..> RepresentationCompany: "<<use>>"
+ResourceCompanyBooking ..> RepresentationBooking: "<<use>>"
+
+ResourceCompany ..> ResourceCompanyFavorite: "/favorites\n<<Path>>"
+ResourceCompanyFavorite ..> RepresentationCompany: "<<use>>"
+ResourceCompanyFavorite ..> RepresentationFavorite: "<<use>>"
+
+Service ..> ResourceFavorites:"/favorites\n<<Path>>"
+ResourceFavorites ..> ResourceFavorite: "/{favoriteId}\n<<Path>>"
+ResourceFavorite ..> RepresentationFavorite: "<<use>>"
+
+@enduml

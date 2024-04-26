@@ -51,7 +51,7 @@ class Favorite {
     - user_id : ObjectId
     - company_id : ObjectId
     + getFavorites(req, res, next) : void
-    + addFavorites(req, res, next) : void
+    + addFavorite(req, res, next) : void
     + removeFavorite(req, res, next) : void
 }
 
