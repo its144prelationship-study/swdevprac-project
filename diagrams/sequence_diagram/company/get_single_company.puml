@@ -8,21 +8,31 @@ participant "<<javaScript>>\n:server" as server
 participant "<<router>>\n:companies" as routerCompanies
 participant "<<middleware>>\n:auth" as authMiddleware
 participant "<<controllers>>\n:companies" as controllersCompanies
+participant "<<model>>\n:User" as modelUser
 participant "<<model>>\n:Company" as modelCompanies
+database "<<MongoDB>>\n:users" as UsersDatabase
 database "<<MongoDB>>\n:companies" as CompaniesDatabase
 
 client -> server ++:req.get('/companies/:companyId')
 server -> routerCompanies ++:app.use("/companies", companies)
 routerCompanies -> authMiddleware ++:protect(req, res, next)
-alt !token || !user
+alt !token 
     authMiddleware -> client :response
-else token && user
-    authMiddleware -> controllersCompanies ++:getCompany(req, res, next)
-    controllersCompanies -> modelCompanies ++:findById(req.params.companyId)
-    modelCompanies -> CompaniesDatabase ++: CompanySchema
-    CompaniesDatabase --> modelCompanies --: company
-    controllersCompanies <-- modelCompanies --: company
-    controllersCompanies -> client --: response
+else token
+    authMiddleware -> modelUser ++:findById(decoded.id)
+    modelUser -> UsersDatabase ++: UserSchema
+    UsersDatabase --> modelUser --: user
+    modelUser -> authMiddleware --: user
+    alt !user
+        authMiddleware -> client :response
+    else user
+        authMiddleware -> controllersCompanies ++:getCompany(req, res, next)
+        controllersCompanies -> modelCompanies ++:findById(req.params.companyId)
+        modelCompanies -> CompaniesDatabase ++: CompanySchema
+        CompaniesDatabase --> modelCompanies --: company
+        controllersCompanies <-- modelCompanies --: company
+        controllersCompanies -> client --: response
+    end
 end
 
 @enduml

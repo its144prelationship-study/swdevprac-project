@@ -1,7 +1,7 @@
-@startuml Get All Bookings (GETALL)
+@startuml Get Single Booking (GETONE)
 
-header Get All Bookings Sequence Diagram
-title "Get All Bookings (GETALL)"
+header Get Single Booking Sequence Diagram
+title "Get Single Booking (GETONE)"
 
 participant "Client" as client
 participant "<<javaScript>>\n:server" as server
@@ -10,10 +10,8 @@ participant "<<middleware>>\n:auth" as authMiddleware
 participant "<<controllers>>\n:bookings" as controllersBookings
 participant "<<model>>\n:User" as modelUser
 participant "<<model>>\n:Booking" as modelBooking
-participant "<<model>>\n:Company" as modelCompany
 database "<<MongoDB>>\n:users" as UsersDatabase
 database "<<MongoDB>>\n:bookings" as BookingsDatabase
-database "<<MongoDB>>\n:companies" as CompaniesDatabase
 
 client -> server ++:req.get('/bookings')
 server -> routerBookings ++:app.use('/bookings',bookings)
@@ -29,22 +27,13 @@ else token
         authMiddleware -> client :response
     else user
         authMiddleware -> controllersBookings ++: getBooking(req, res, next)
-        alt req.params.companyId
-            controllersBookings -> modelCompany ++: findById(req.params.companyId)
-            modelCompany -> CompaniesDatabase ++: CompanySchema
-            CompaniesDatabase --> modelCompany --: company
-            controllersBookings <-- modelCompany --:company
-        end
-        controllersBookings -> modelBooking ++:find(req.query).\ncountDocuments()
-        modelBooking -> BookingsDatabase ++: BookingSchema
-        BookingsDatabase --> modelBooking --: total
-        controllersBookings <-- modelBooking --: total
-        controllersBookings -> modelBooking ++:find(req.query)
+        controllersBookings -> modelBooking ++:findById(req.params.bookingId)
         modelBooking -> BookingsDatabase ++: BookingSchema
         BookingsDatabase --> modelBooking --: booking
         controllersBookings <-- modelBooking --:booking
         controllersBookings -> client --:response
     end
 end
+
 
 @enduml

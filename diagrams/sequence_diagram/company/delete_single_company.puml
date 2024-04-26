@@ -8,9 +8,11 @@ participant "<<javaScript>>\n:server" as server
 participant "<<router>>\n:companies" as routerCompanies
 participant "<<middleware>>\n:auth" as authMiddleware
 participant "<<controllers>>\n:companies" as controllersCompanies
+participant "<<model>>\n:User" as modelUser
 participant "<<model>>\n:Company" as modelCompanies
 participant "<<model>>\n:Booking" as modelBookings
 participant "<<model>>\n:Favorite" as modelFavorites
+database "<<MongoDB>>\n:users" as UsersDatabase
 database "<<MongoDB>>\n:companies" as CompaniesDatabase
 database "<<MongoDB>>\n:bookings" as BookingsDatabase
 database "<<MongoDB>>\n:favorites" as FavoritesDatabase
@@ -18,30 +20,38 @@ database "<<MongoDB>>\n:favorites" as FavoritesDatabase
 client -> server ++:req.post('/companies/:company_id')
 server -> routerCompanies ++:app.use("/companies", companies)
 routerCompanies -> authMiddleware ++:protect(req, res, next)
-alt !token || !user
+alt !token 
     authMiddleware -> client :response
-else token && user
-    authMiddleware -> authMiddleware ++:authorize("ADMIN")
-    alt !["ADMIN"].includes(req.user.role)
+else token
+    authMiddleware -> modelUser ++:findById(decoded.id)
+    modelUser -> UsersDatabase ++: UserSchema
+    UsersDatabase --> modelUser --: user
+    modelUser -> authMiddleware --: user
+    alt !user
         authMiddleware -> client :response
-    else ["ADMIN"].includes(req.user.role)
-        authMiddleware -> controllersCompanies ++:deleteCompany(req, res, next)
-        controllersCompanies -> modelCompanies ++:findByIdAndDelete(req.params.companyId)
-        modelCompanies -> CompaniesDatabase ++: CompanySchema
-        CompaniesDatabase --> modelCompanies --: company
-        controllersCompanies <-- modelCompanies --: company
-        alt !company
-            controllersCompanies -> client : response
-        else company
-            controllersCompanies -> modelBookings ++:deleteMany(req.params.companyId)
-            modelBookings -> BookingsDatabase ++: BookingSchema
-            BookingsDatabase --> modelBookings --: bookings
-            controllersCompanies <-- modelBookings --: bookings
-            controllersCompanies -> modelFavorites ++:deleteMany(req.params.companyId)
-            modelFavorites -> FavoritesDatabase ++: FavoriteSchema
-            FavoritesDatabase --> modelFavorites --: favorites
-            controllersCompanies <-- modelFavorites --: favorites
-            controllersCompanies -> client --: response
+    else user
+        authMiddleware -> authMiddleware ++:authorize("ADMIN")
+        alt !["ADMIN"].includes(req.user.role)
+            authMiddleware -> client :response
+        else ["ADMIN"].includes(req.user.role)
+            authMiddleware -> controllersCompanies ++:deleteCompany(req, res, next)
+            controllersCompanies -> modelCompanies ++:findByIdAndDelete(req.params.companyId)
+            modelCompanies -> CompaniesDatabase ++: CompanySchema
+            CompaniesDatabase --> modelCompanies --: company
+            controllersCompanies <-- modelCompanies --: company
+            alt !company
+                controllersCompanies -> client : response
+            else company
+                controllersCompanies -> modelBookings ++:deleteMany(req.params.companyId)
+                modelBookings -> BookingsDatabase ++: BookingSchema
+                BookingsDatabase --> modelBookings --: bookings
+                controllersCompanies <-- modelBookings --: bookings
+                controllersCompanies -> modelFavorites ++:deleteMany(req.params.companyId)
+                modelFavorites -> FavoritesDatabase ++: FavoriteSchema
+                FavoritesDatabase --> modelFavorites --: favorites
+                controllersCompanies <-- modelFavorites --: favorites
+                controllersCompanies -> client --: response
+            end
         end
     end
 end

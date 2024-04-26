@@ -10,11 +10,11 @@ participant "<<controllers>>\n:auth" as controllersAuth
 participant "<<model>>\n:User" as modelUser
 database "<<MongoDB>>\n:users" as UsersDatabase
 
-client->server ++:req.post('/auth/login')
-server->routerAuth ++:app.use("/auth", auth)
+client -> server ++:req.post('/auth/login')
+server -> routerAuth ++:app.use("/auth", auth)
 routerAuth -> controllersAuth ++:login(req, res, next)
-controllersAuth->modelUser ++:findOne(req.body.email)\n.select("+password")
-modelUser ->UsersDatabase ++: UserSchema
+controllersAuth -> modelUser ++:findOne(req.body.email)\n.select("+password")
+modelUser -> UsersDatabase ++: UserSchema
 UsersDatabase --> modelUser --: user
 controllersAuth <-- modelUser --: user
 alt !user
@@ -27,8 +27,8 @@ else user
     else isMatch
         controllersAuth -> modelUser ++: getSignedJwtToken()
         controllersAuth <-- modelUser --: token
+        controllersAuth -> client --: response
     end
-    controllersAuth->client --: response
 end
 
 @enduml

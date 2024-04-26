@@ -8,35 +8,45 @@ participant "<<javaScript>>\n:server" as server
 participant "<<router>>\n:companies" as routerCompanies
 participant "<<middleware>>\n:auth" as authMiddleware
 participant "<<controllers>>\n:companies" as controllersCompanies
+participant "<<model>>\n:User" as modelUser
 participant "<<model>>\n:Company" as modelCompanies
+database "<<MongoDB>>\n:users" as UsersDatabase
 database "<<MongoDB>>\n:companies" as CompaniesDatabase
 
 client -> server ++:req.post('/companies')
 server -> routerCompanies ++:app.use("/companies", companies)
 routerCompanies -> authMiddleware ++:protect(req, res, next)
-alt !token || !user
+alt !token 
     authMiddleware -> client :response
-else token && user
-    authMiddleware -> authMiddleware ++:authorize("ADMIN")
-    alt !["ADMIN"].includes(req.user.role)
+else token
+    authMiddleware -> modelUser ++:findById(decoded.id)
+    modelUser -> UsersDatabase ++: UserSchema
+    UsersDatabase --> modelUser --: user
+    modelUser -> authMiddleware --: user
+    alt !user
         authMiddleware -> client :response
-    else ["ADMIN"].includes(req.user.role)
-        authMiddleware -> controllersCompanies ++:createCompany(req, res, next)
-        alt !body.company_name || !body.address || !body.tel
-            controllersCompanies -> client :response
-        else body.company_name && body.address && body.tel
-            controllersCompanies -> modelCompanies ++:findOne(req.body.company_name)
-            modelCompanies -> CompaniesDatabase ++: CompanySchema
-            CompaniesDatabase --> modelCompanies --: company
-            controllersCompanies <-- modelCompanies --: company
-            alt company
-                controllersCompanies -> client : response
-            else !company
-                controllersCompanies -> modelCompanies ++:create(req.body)
+    else user
+        authMiddleware -> authMiddleware ++:authorize("ADMIN")
+        alt !["ADMIN"].includes(req.user.role)
+            authMiddleware -> client :response
+        else ["ADMIN"].includes(req.user.role)
+            authMiddleware -> controllersCompanies ++:createCompany(req, res, next)
+            alt !body.company_name || !body.address || !body.tel
+                controllersCompanies -> client :response
+            else body.company_name && body.address && body.tel
+                controllersCompanies -> modelCompanies ++:findOne(req.body.company_name)
                 modelCompanies -> CompaniesDatabase ++: CompanySchema
                 CompaniesDatabase --> modelCompanies --: company
                 controllersCompanies <-- modelCompanies --: company
-                controllersCompanies -> client --: response
+                alt company
+                    controllersCompanies -> client : response
+                else !company
+                    controllersCompanies -> modelCompanies ++:create(req.body)
+                    modelCompanies -> CompaniesDatabase ++: CompanySchema
+                    CompaniesDatabase --> modelCompanies --: company
+                    controllersCompanies <-- modelCompanies --: company
+                    controllersCompanies -> client --: response
+                end
             end
         end
     end

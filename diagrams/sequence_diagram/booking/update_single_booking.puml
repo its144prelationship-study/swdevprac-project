@@ -1,0 +1,54 @@
+@startuml Update Single Booking (PUT)
+
+header Update Single Booking Sequence Diagram
+title "Update Single Booking (PUT)"
+
+participant "Client" as client
+participant "<<javaScript>>\n:server" as server
+participant "<<router>>\n:bookings" as routerBookings
+participant "<<middleware>>\n:auth" as authMiddleware
+participant "<<controllers>>\n:bookings" as controllersBookings
+participant "<<model>>\n:User" as modelUser
+participant "<<model>>\n:Booking" as modelBooking
+database "<<MongoDB>>\n:users" as UsersDatabase
+database "<<MongoDB>>\n:bookings" as BookingsDatabase
+
+client -> server ++:req.get('/bookings')
+server -> routerBookings ++:app.use('/bookings',bookings)
+routerBookings -> authMiddleware ++:protect(req, res, next)
+alt !token 
+    authMiddleware -> client :response
+else token
+    authMiddleware -> modelUser ++:findById(decoded.id)
+    modelUser -> UsersDatabase ++: UserSchema
+    UsersDatabase --> modelUser --: user
+    modelUser -> authMiddleware --: user
+    alt !user
+        authMiddleware -> client :response
+    else user
+        authMiddleware -> controllersBookings ++: getBooking(req, res, next)
+        controllersBookings -> modelBooking ++:findById(req.params.bookingId)
+        modelBooking -> BookingsDatabase ++: BookingSchema
+        BookingsDatabase --> modelBooking --: booking
+        controllersBookings <-- modelBooking --:booking
+        alt !booking || (booking.user_id !== req.user.id && req.user.role !== 'ADMIN') || date is not in range
+            controllersBookings -> client :response
+        else booking && (booking.user_id === req.user.id || req.user.role === 'ADMIN') && date is in range
+            controllersBookings -> modelBooking ++:findOne({ user_id: req.user.id, \ncompany_id, date })
+            modelBooking -> BookingsDatabase ++: BookingSchema
+            BookingsDatabase --> modelBooking --: duplicate_booking
+            controllersBookings <-- modelBooking --:duplicate_booking
+            alt duplicate_booking
+                controllersBookings -> client :response
+            else !duplicate_booking
+                controllersBookings -> modelBooking ++:findByIdAndUpdate( booking_id, \nreq.body)
+                modelBooking -> BookingsDatabase ++: BookingSchema
+                BookingsDatabase --> modelBooking --: update_booking
+                controllersBookings <-- modelBooking --:update_booking
+                controllersBookings -> client --:response
+            end
+        end
+    end
+end
+
+@enduml

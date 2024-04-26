@@ -1,7 +1,7 @@
-@startuml Get All Bookings (GETALL)
+@startuml Delete Single Bookings (DELETE)
 
-header Get All Bookings Sequence Diagram
-title "Get All Bookings (GETALL)"
+header Delete Single Bookings Sequence Diagram
+title "Delete Single Bookings (DELETE)"
 
 participant "Client" as client
 participant "<<javaScript>>\n:server" as server
@@ -10,13 +10,11 @@ participant "<<middleware>>\n:auth" as authMiddleware
 participant "<<controllers>>\n:bookings" as controllersBookings
 participant "<<model>>\n:User" as modelUser
 participant "<<model>>\n:Booking" as modelBooking
-participant "<<model>>\n:Company" as modelCompany
 database "<<MongoDB>>\n:users" as UsersDatabase
 database "<<MongoDB>>\n:bookings" as BookingsDatabase
-database "<<MongoDB>>\n:companies" as CompaniesDatabase
 
-client -> server ++:req.get('/bookings')
-server -> routerBookings ++:app.use('/bookings',bookings)
+client->server ++:req.get('/bookings')
+server->routerBookings ++:app.use('/bookings',bookings)
 routerBookings -> authMiddleware ++:protect(req, res, next)
 alt !token 
     authMiddleware -> client :response
@@ -29,21 +27,19 @@ else token
         authMiddleware -> client :response
     else user
         authMiddleware -> controllersBookings ++: getBooking(req, res, next)
-        alt req.params.companyId
-            controllersBookings -> modelCompany ++: findById(req.params.companyId)
-            modelCompany -> CompaniesDatabase ++: CompanySchema
-            CompaniesDatabase --> modelCompany --: company
-            controllersBookings <-- modelCompany --:company
-        end
-        controllersBookings -> modelBooking ++:find(req.query).\ncountDocuments()
-        modelBooking -> BookingsDatabase ++: BookingSchema
-        BookingsDatabase --> modelBooking --: total
-        controllersBookings <-- modelBooking --: total
-        controllersBookings -> modelBooking ++:find(req.query)
+        controllersBookings -> modelBooking ++:findById(req.params.bookingId)
         modelBooking -> BookingsDatabase ++: BookingSchema
         BookingsDatabase --> modelBooking --: booking
         controllersBookings <-- modelBooking --:booking
-        controllersBookings -> client --:response
+        alt booking.user_id !== req.user.id && req.user.role !== "ADMIN"
+            controllersBookings -> client :response
+        else booking.user_id === req.user.id || req.user.role === "ADMIN"
+            controllersBookings -> modelBooking ++:booking.deleteOne()
+            modelBooking -> BookingsDatabase ++: BookingSchema
+            BookingsDatabase --> modelBooking --: delete_booking
+            controllersBookings <-- modelBooking --: delete_booking
+            controllersBookings -> client --:response
+        end
     end
 end
 

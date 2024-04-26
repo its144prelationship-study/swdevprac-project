@@ -1,0 +1,64 @@
+@startuml Create Single Booking (POST)
+
+header Create Single Booking Sequence Diagram
+title "Create Single Booking (POST)"
+
+participant "Client" as client
+participant "<<javaScript>>\n:server" as server
+participant "<<router>>\n:bookings" as routerBookings
+participant "<<middleware>>\n:auth" as authMiddleware
+participant "<<controllers>>\n:bookings" as controllersBookings
+participant "<<model>>\n:User" as modelUser
+participant "<<model>>\n:Booking" as modelBooking
+participant "<<model>>\n:Company" as modelCompany
+database "<<MongoDB>>\n:users" as UsersDatabase
+database "<<MongoDB>>\n:bookings" as BookingsDatabase
+database "<<MongoDB>>\n:companies" as CompaniesDatabase
+
+client -> server ++:req.get('/bookings')
+server -> routerBookings ++:app.use('/bookings',bookings)
+routerBookings -> authMiddleware ++:protect(req, res, next)
+alt !token 
+    authMiddleware -> client :response
+else token
+    authMiddleware -> modelUser ++:findById(decoded.id)
+    modelUser -> UsersDatabase ++: UserSchema
+    UsersDatabase --> modelUser --: user
+    modelUser -> authMiddleware --: user
+    alt !user
+        authMiddleware -> client :response
+    else user
+        authMiddleware -> controllersBookings ++: getBooking(req, res, next)
+        controllersBookings -> modelCompany ++: findById(company_id)
+        modelCompany -> CompaniesDatabase ++: CompanySchema
+        CompaniesDatabase --> modelCompany --: company
+        controllersBookings <-- modelCompany --:company
+        alt !company
+            controllersBookings -> client :response
+        else company
+            controllersBookings -> modelBooking ++:find({ user_id: req.user.id })
+            modelBooking -> BookingsDatabase ++: BookingSchema
+            BookingsDatabase --> modelBooking --: existing_booking
+            controllersBookings <-- modelBooking --:existing_booking
+            alt (existingBooking.length >= 3 && req.user.role !== "ADMIN") || date not in range
+                controllersBookings -> client :response
+            else (existingBooking.length < 3 || req.user.role === "ADMIN") && date in range
+                controllersBookings -> modelBooking ++:findOne({ user_id: req.user.id, \ncompany_id, date })
+                modelBooking -> BookingsDatabase ++: BookingSchema
+                BookingsDatabase --> modelBooking --: duplicate_booking
+                controllersBookings <-- modelBooking --:duplicate_booking
+                alt duplicate_booking
+                    controllersBookings -> client :response
+                else !duplicate_booking
+                    controllersBookings -> modelBooking ++:create({ user_id: req.user.id, \ncompany_id, date })
+                    modelBooking -> BookingsDatabase ++: BookingSchema
+                    BookingsDatabase --> modelBooking --: booking
+                    controllersBookings <-- modelBooking --:booking
+                    controllersBookings -> client --:response
+                end
+            end
+        end
+    end
+end
+
+@enduml

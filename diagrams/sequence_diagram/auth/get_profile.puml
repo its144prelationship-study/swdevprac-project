@@ -11,25 +11,25 @@ participant "<<controllers>>\n:auth" as controllersAuth
 participant "<<model>>\n:User" as modelUser
 database "<<MongoDB>>\n:users" as UsersDatabase
 
-client->server ++:req.get('/auth/profile')
-server->routerAuth ++:app.use("/auth", auth)
+client -> server ++:req.get('/auth/profile')
+server -> routerAuth ++:app.use("/auth", auth)
 routerAuth -> authMiddleware ++:protect(req, res, next)
 alt !token 
     authMiddleware -> client :response
 else token
     authMiddleware -> modelUser ++:findById(decoded.id)
-    modelUser ->UsersDatabase ++: UserSchema
+    modelUser -> UsersDatabase ++: UserSchema
     UsersDatabase --> modelUser --: user
     modelUser -> authMiddleware --: user
     alt !user
         authMiddleware -> client :response
     else user
         authMiddleware -> controllersAuth ++:getProfile(req, res, next)
-        controllersAuth->modelUser ++:findById(req.user.id)
-        modelUser ->UsersDatabase ++: UserSchema
+        controllersAuth -> modelUser ++:findById(req.user.id)
+        modelUser -> UsersDatabase ++: UserSchema
         UsersDatabase --> modelUser --: user
         controllersAuth <-- modelUser --: user
-        controllersAuth->client --: response
+        controllersAuth -> client --: response
     end
 end
 
